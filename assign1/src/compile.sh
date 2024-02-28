@@ -1,1 +1,1 @@
-g++ -O2 file.cpp -o run -lpapi 
+g++ -O2 matrixproduct.cpp -o run -lpapi 
