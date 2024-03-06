@@ -39,6 +39,9 @@ def main():
     op = int(input("Selection?: "))
     
     lin = int(input("Dimensions: lins=cols ? "))
+    if op == 3:
+        col = int(input("Block size: "))
+        
     col = lin
     
     match op:
