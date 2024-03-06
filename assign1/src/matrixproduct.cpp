@@ -86,7 +86,7 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
     SYSTEMTIME Time1, Time2;
     char st[100];
     double temp;
-    int i, j, k, ii, jj, kk;
+    int i, j, k, i2, j2, k2;
 
     double *pha, *phb, *phc;
 
@@ -110,16 +110,16 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
         {
             for (k = 0; k < m_ar; k += bkSize)
             {
-                for (ii = i; ii < min(i + bkSize, m_ar); ii++)
+                for (i2 = i; i2 < min(i + bkSize, m_ar); i2++)
                 {
-                    for (jj = j; jj < min(j + bkSize, m_br); jj++)
+                    for (j2 = j; j2 < min(j + bkSize, m_br); j2++)
                     {
                         temp = 0;
-                        for (kk = k; kk < min(k + bkSize, m_ar); kk++)
+                        for (k2 = k; k2 < min(k + bkSize, m_ar); k2++)
                         {
-                            temp += pha[ii * m_ar + kk] * phb[kk * m_br + jj];
+                            temp += pha[i2 * m_ar + k2] * phb[k2 * m_br + j2];
                         }
-                        phc[ii * m_ar + jj] += temp;
+                        phc[i2 * m_ar + j2] += temp;
                     }
                 }
             }
