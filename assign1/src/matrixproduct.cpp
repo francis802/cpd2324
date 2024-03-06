@@ -76,9 +76,7 @@ void OnMult(int m_ar, int m_br)
 
 // add code here for line x line matriz multiplication
 void OnMultLine(int m_ar, int m_br)
-{
-    
-    
+{    
 }
 
 // add code here for block x block matriz multiplication
