@@ -28,7 +28,37 @@ def onMult(m_ar,m_br):
     print("Time:", end-start, "seconds")
     print("Result matrix:", phc[:10])
     
-    
+
+def onMultBlock(m_ar,m_br,block):
+    pha = [0.0] * m_ar * m_ar
+    phb = [0.0] * m_ar * m_ar
+    phc = [0.0] * m_ar * m_ar
+
+    for i in range(m_ar):
+        for j in range(m_ar):
+            pha[i*m_ar+j] = 1.0
+
+    for i in range(m_br):
+        for j in range(m_br):
+            phb[i*m_br+j] = 1.0
+
+    start = time.time()
+
+    for i in range(0, m_ar, block):
+        for j in range(0, m_br, block):
+            for k in range(0, m_ar, block):
+                for ii in range(i, min(i+block, m_ar)):
+                    for jj in range(j, min(j+block, m_ar)):
+                        temp = 0.0
+                        for kk in range(k, min(k+block, m_ar)):
+                            temp += pha[ii*m_ar+kk] * phb[kk*m_br+jj]
+                        phc[ii*m_ar+jj] += temp
+
+    end = time.time()
+
+    print("Time:", end-start, "seconds")
+    print("Result matrix:", phc[:10])
+
 
 def main():
     
@@ -40,8 +70,8 @@ def main():
     
     lin = int(input("Dimensions: lins=cols ? "))
     if op == 3:
-        col = int(input("Block size: "))
-        
+        block = int(input("Block size: "))
+
     col = lin
     
     match op:
@@ -50,7 +80,7 @@ def main():
         case 2:
             print("Line Multiplication")
         case 3:
-            print("Block Multiplication")
+            onMultBlock(lin, col, block)
         case _:
             print("Invalid selection")
  
