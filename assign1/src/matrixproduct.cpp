@@ -81,7 +81,6 @@ void OnMultLine(int m_ar, int m_br)
     SYSTEMTIME Time1, Time2;
     
     char st[100];
-    double temp;
     int i, j, k;
 
     double *pha, *phb, *phc;
@@ -110,7 +109,7 @@ void OnMultLine(int m_ar, int m_br)
         {   
             for( k=0; k<m_ar; k++)
             {    
-                phc[i*m_ar+j] += pha[i*m_ar+k] * phb[k*m_br+j];
+                phc[i*m_ar+k] += pha[i*m_ar+j] * phb[j*m_br+k];
             }
         }
     }
@@ -174,7 +173,7 @@ void OnMultBlock(int m_ar, int m_br, int bkSize)
                     {
                         for (k2 = k; k2 < min(k + bkSize, m_ar); k2++)
                         {
-							phc[i2 * m_ar + j2] += pha[i2 * m_ar + k2] * phb[k2 * m_br + j2];
+							phc[i2 * m_ar + k2] += pha[i2 * m_ar + j2] * phb[j2 * m_br + k2];
                         }
                     }
                 }
