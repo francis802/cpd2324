@@ -61,23 +61,20 @@ def main():
     
     print("1. Matrix Multiplication")
     print("2. Line Multiplication")
-    print("3. Block Multiplication")
     
     op = int(input("Selection?: "))
     
     lin = int(input("Dimensions: lins=cols ? "))
-    if op == 3:
-        block = int(input("Block size: "))
 
     col = lin
     
     match op:
         case 1:
-            onMult(lin, col)            
+            onMult(lin, col)
+            main()            
         case 2:
-            print("Line Multiplication")
-        case 3:
-            onMultBlock(lin, col, block)
+            onMultLine(lin, col)
+            main()
         case _:
             print("Invalid selection")
  
