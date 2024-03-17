@@ -152,7 +152,7 @@ void loop(int option, int m_ar, int m_br, double *pha, double *phb, double *phc,
     }
 }
 
-void OnMultOptions(int m_ar, int m_br, int option, int bkSize = 0)
+void OnMultOptions(int m_ar, int m_br, int option, int bkSize)
 {
     SYSTEMTIME Time1, Time2;
     double OmpStart, OmpEnd;
@@ -257,6 +257,10 @@ int main(int argc, char *argv[])
     if (ret != PAPI_OK)
         cout << "ERROR: PAPI_L2_DCM" << endl;
 
+    ret = PAPI_add_event(EventSet, PAPI_FP_OPS);
+    if (ret != PAPI_OK)
+        cout << "ERROR: PAPI_FP_OPS" << endl;
+
     op = 1;
     do
     {
@@ -289,7 +293,7 @@ int main(int argc, char *argv[])
             OnMultOptions(lin, col, op, blockSize);
             break;
         default:
-            OnMultOptions(lin, col, op);
+            OnMultOptions(lin, col, op, 0);
             break;
         }
 
@@ -298,6 +302,7 @@ int main(int argc, char *argv[])
             cout << "ERROR: Stop PAPI" << endl;
         printf("L1 DCM: %lld \n", values[0]);
         printf("L2 DCM: %lld \n", values[1]);
+        printf("FP_OPS: %lld \n", values[2]);
 
         ret = PAPI_reset(EventSet);
         if (ret != PAPI_OK)
