@@ -1,10 +1,10 @@
 # CPD Projects
 
-CPD Projects of group T&lt;1&gt;&lt;1&gt;G&lt;1&gt;&lt;7&gt;.
+CPD Projects of group T11-G17;.
 
 Group members:
 
-1. &lt;Diogo&gt; &lt;Silva&gt; (&lt;email address&gt;)
-2. &lt;Francisco&gt; &lt;Campos&gt; (&lt;email address&gt;)
-3. &lt;João&gt; &lt;Figueiredo&gt; (&lt;up202108829@up.pt&gt;)
+1. Diogo Silva (email address)
+2. Francisco Campos(email address)
+3. João Figueiredo (up202108829@up.pt)
 
