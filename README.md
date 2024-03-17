@@ -1,6 +1,6 @@
 # CPD Projects
 
-CPD Projects of group T11-G17;.
+CPD Projects of group T11-G17.
 
 Group members:
 
