@@ -152,7 +152,7 @@ void loop(int option, int m_ar, int m_br, double *pha, double *phb, double *phc,
     }
 }
 
-void OnMultLineNew(int m_ar, int m_br, int option, int bkSize = 0)
+void OnMultOptions(int m_ar, int m_br, int option, int bkSize = 0)
 {
     SYSTEMTIME Time1, Time2;
     double OmpStart, OmpEnd;
@@ -290,10 +290,10 @@ int main(int argc, char *argv[])
         case BLOCK:
             cout << "Block Size? ";
             cin >> blockSize;
-            OnMultLineNew(lin, col, op, blockSize);
+            OnMultOptions(lin, col, op, blockSize);
             break;
         default:
-            OnMultLineNew(lin, col, op);
+            OnMultOptions(lin, col, op);
             break;
         }
 
