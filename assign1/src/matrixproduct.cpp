@@ -181,7 +181,6 @@ void OnMultOptions(int m_ar, int m_br, int option, int bkSize = 0)
     OmpStart = omp_get_wtime();
 
     loop(option, m_ar, m_br, pha, phb, phc, bkSize);
-    
         
     Time2 = clock();
     OmpEnd = omp_get_wtime();
