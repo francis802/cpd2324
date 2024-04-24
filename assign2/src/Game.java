@@ -1,5 +1,10 @@
-class Game {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
+public class Game {
+    private List<Socket> userSockets;
+    public Game(int players, List<Socket> userSockets) {
+        this.userSockets = userSockets;
+    }
+    public void start() {
+        System.out.println("Starting game with " + userSockets.size() + " players");
+
     }
 }
