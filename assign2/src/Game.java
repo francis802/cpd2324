@@ -1,3 +1,6 @@
+import java.net.Socket;
+import java.util.List;
+
 public class Game {
     private List<Socket> userSockets;
     public Game(int players, List<Socket> userSockets) {
