@@ -3,15 +3,18 @@ import java.net.*;
 import java.util.Date;
 
 public class Server {
+    public static final String HOSTNAME = "localhost";
+    public static final int PORT = 8080;
 
     public static void main(String[] args) {
-        if (args.length < 1) return;
+        if (args.length > 0) {
+            System.out.println("Usage: java Server");
+            return;
+        }
 
-        int port = Integer.parseInt(args[0]);
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
-
-            System.out.println("Server is listening on port " + port);
+            System.out.println("Server is listening on port " + PORT);
 
             while (true) {
                 Socket socket = serverSocket.accept();

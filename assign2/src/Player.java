@@ -7,14 +7,16 @@ import java.io.*;
  * @author www.codejava.net
  */
 public class Player {
+    public static final String HOSTNAME = "localhost";
+    public static final int PORT = 8080;
 
     public static void main(String[] args) {
-        if (args.length < 2) return;
+        if (args.length > 0) {
+            System.out.println("Usage: java Player");
+            return;
+        }
 
-        String hostname = args[0];
-        int port = Integer.parseInt(args[1]);
-
-        try (Socket socket = new Socket(hostname, port)) {
+        try (Socket socket = new Socket(HOSTNAME, PORT)) {
 
             OutputStream output = socket.getOutputStream();
             PrintWriter writer = new PrintWriter(output, true);
