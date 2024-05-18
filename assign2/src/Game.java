@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 
-public class Game {
+public class Game implements Runnable{
 
     private List<Socket> userSockets;
     private List<Player> players;
@@ -20,7 +20,8 @@ public class Game {
     private static final int MAX_WINS = 5;
     private static final int ELO_K = 32;
 
-    public static void main(String[] args) {
+    @Override
+    public void run() {
         List<Player> players = new ArrayList<Player>();
         Database db = new Database();
         players = db.getPlayers();
