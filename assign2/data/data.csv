@@ -1,2 +1,5 @@
 username,password,elo
-test,test,100
+player1,password,50
+player2,password,100
+player3,password,200
+player10,password,10000

@@ -181,23 +181,27 @@ public class Database {
         player.setToken(token);
 
     }
-    
-    
-    public static void main(String[] args) {
-            if (args.length > 0) {
-                System.out.println("Usage: java Database");
-                return;
-            }
 
-            Database db = new Database();
-
-            
-            db.loginUserName("test", "test");
-
-            
-            for (Player player : players) {
-                System.out.println(player.getUserName() + " " + player.getPassword() + " " + player.getElo() + " " + player.getToken() + " " + player.isLoggedIn());    
-            }
-
+    public List<Player> getPlayers() {
+        return players;
     }
+    
+    
+    // public static void main(String[] args) {
+    //         if (args.length > 0) {
+    //             System.out.println("Usage: java Database");
+    //             return;
+    //         }
+
+    //         Database db = new Database();
+
+            
+    //         db.loginUserName("test", "test");
+
+            
+    //         for (Player player : players) {
+    //             System.out.println(player.getUserName() + " " + player.getPassword() + " " + player.getElo() + " " + player.getToken() + " " + player.isLoggedIn());    
+    //         }
+
+    // }
 }
