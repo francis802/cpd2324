@@ -7,36 +7,54 @@ import java.io.*;
  * @author www.codejava.net
  */
 public class Player {
-    public static final String HOSTNAME = "localhost";
-    public static final int PORT = 8080;
+   
+    private final String userName;
+    private final String password;
+    private int elo;
+    private String token;
+    private boolean loggedIn;
 
-    public static void main(String[] args) {
-        if (args.length > 0) {
-            System.out.println("Usage: java Player");
-            return;
-        }
+    public Player(String userName, String password, int elo) {
+        this.userName = userName;
+        this.password = password;
+        this.elo = elo; 
+        this.token = "";
+        this.loggedIn = false;
+    }
 
-        try (Socket socket = new Socket(HOSTNAME, PORT)) {
+    public String getUserName() {
+        return userName;
+    }
 
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
-            writer.println("new Date()?".toString());
+    public String getPassword() {
+        return password;
+    }
 
-            InputStream input = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+    public int getElo() {
+        return elo;
+    }
 
-            String time = reader.readLine();
+    public String getToken() {
+        return token;
+    }
 
-            System.out.println(time);
+    public void setToken(String token) {
+        this.token = token;
+    }
 
+    public boolean isLoggedIn() {
+        return loggedIn;
+    }
 
-        } catch (UnknownHostException ex) {
+    public void logIn() {
+        this.loggedIn = true;
+    }
 
-            System.out.println("Server not found: " + ex.getMessage());
+    public void logOut() {
+        this.loggedIn = false;
+    }
 
-        } catch (IOException ex) {
-
-            System.out.println("I/O error: " + ex.getMessage());
-        }
+    public void updateElo(int gameResult) {
+        this.elo += gameResult;
     }
 }
