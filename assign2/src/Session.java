@@ -60,8 +60,10 @@ public class Session {
             while (true) {
                 line = commnSocket.receiveString();
                 System.out.println(line);
-                String a = this.sessionInput.putLine();
-                commnSocket.sendString(a);
+                if (!line.equals("Registration successful") && !line.equals("Registration failed") && !line.equals("Login successful") && !line.equals("Login failed")){
+                    String a = this.sessionInput.putLine();
+                    commnSocket.sendString(a);
+                }
             }
 
 
