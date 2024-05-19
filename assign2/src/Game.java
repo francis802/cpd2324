@@ -2,6 +2,11 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 
 public class Game implements Runnable {
 
@@ -50,10 +55,23 @@ public class Game implements Runnable {
     // Dont know if this is well implemented
     public void sendMessage(String message, Socket socket) {
         try {
-            socket.getOutputStream().write(message.getBytes());
+            OutputStream output = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(output, true);
+            writer.println(message);
+        } catch (IOException e) {   
+            e.printStackTrace();
+        }
+    }
+
+    public String getInputFromPlayer(Socket socket) {
+        try {
+            InputStream input = socket.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            return reader.readLine();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
     public void start() {
@@ -157,7 +175,7 @@ public class Game implements Runnable {
 
     // Dont know if this is well implemented
     private void handleDisconnect(Player player) {
-        player.logOut();
+        //player.logOut();
         player.setDisconnectTime(System.currentTimeMillis());
         scheduler.schedule(() -> {
             if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) >= RECONNECT_TIMEOUT * 1000) {
@@ -170,7 +188,7 @@ public class Game implements Runnable {
     private void handleReconnect(Player player, Socket newSocket) {
         if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) <= RECONNECT_TIMEOUT * 1000) {
             player.setSocket(newSocket);
-            player.logIn();
+            //player.logIn();
             System.out.println("Player " + player.getUserName() + " reconnected.");
         } else {
             System.out.println("Player " + player.getUserName() + " failed to reconnect in time.");

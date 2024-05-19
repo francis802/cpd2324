@@ -2,6 +2,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.Socket;
 import java.io.FileWriter;
 import java.security.SecureRandom;
 import java.util.*;
@@ -37,8 +38,8 @@ public class Database {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] data = line.split(",");
-                Player player = new Player(data[0], data[1], Integer.parseInt(data[2]));
-                players.add(player);
+                //Player player = new Player(data[0], data[1], Integer.parseInt(data[2]));
+                //players.add(player);
             }
             scanner.close();
 
@@ -112,7 +113,7 @@ public class Database {
         ALREADY_LOGGED_IN
     }   
 
-    public RegisterStatus register(String userName, String password) {
+    public RegisterStatus register(String userName, String password, Socket socket) {
 
         if (userName.length() < 3 || userName.length() > 15) {
             return RegisterStatus.INVALID_USERNAME;
@@ -134,16 +135,15 @@ public class Database {
 
         Player player = new Player(userName, password, DEFAULT_ELO);
 
+        player.setSocket(socket);
         createToken(player);
         player.login();
-
         players.add(player);
         
-
         return RegisterStatus.SUCCESS;
     }
 
-    public LoginStatus login(String userName, String password) {
+    public LoginStatus login(String userName, String password, Socket socket) {
         Player player = findUserName(userName);
 
         if (player == null) {
@@ -158,13 +158,14 @@ public class Database {
             return LoginStatus.ALREADY_LOGGED_IN;
         }
 
+        player.setSocket(socket);
         createToken(player);
         player.login();
 
         return LoginStatus.SUCCESS;
     }
 
-    public LoginStatus login(String token) {
+    public LoginStatus login(String token, Socket socket) {
         Player player = findToken(token);
 
         if (player == null) {
@@ -179,6 +180,7 @@ public class Database {
             return LoginStatus.EXPIRED_TOKEN;
         }
 
+        player.setSocket(socket);
         player.login();
 
         return LoginStatus.SUCCESS;
@@ -257,29 +259,29 @@ public class Database {
     }
     
     
-    public static void main(String[] args) {
-            if (args.length > 0) {
-                System.out.println("Usage: java Database");
-                return;
-            }
+    // public static void main(String[] args) {
+    //         if (args.length > 0) {
+    //             System.out.println("Usage: java Database");
+    //             return;
+    //         }
 
-            Database db = new Database();
-
-            
-            db.register("user1", "password1");
-            db.register("user2", "password2");
-            db.register("user3", "password3");
+    //         Database db = new Database();
 
             
-            for (Player player : players) {
-                System.out.println(player.getUserName() + " " + player.getPassword() + " " + player.getElo() + " " + player.getToken() + " " + player.isLoggedIn());    
-            }
+    //         db.register("user1", "password1");
+    //         db.register("user2", "password2");
+    //         db.register("user3", "password3");
 
-            var a = db.validToken(players.get(0).getToken());  
+            
+    //         for (Player player : players) {
+    //             System.out.println(player.getUserName() + " " + player.getPassword() + " " + player.getElo() + " " + player.getToken() + " " + player.isLoggedIn());    
+    //         }
 
-            for(Map.Entry<String, Long> entry : db.tokens.entrySet()) {
-                System.out.println(entry.getKey() + " " + entry.getValue());
-            }
+    //         var a = db.validToken(players.get(0).getToken());  
 
-    }
+    //         for(Map.Entry<String, Long> entry : db.tokens.entrySet()) {
+    //             System.out.println(entry.getKey() + " " + entry.getValue());
+    //         }
+
+    // }
 }

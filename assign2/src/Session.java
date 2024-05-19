@@ -18,30 +18,33 @@ public class Session {
             return;
         }
 
-        // try (Socket socket = new Socket(HOSTNAME, PORT)) {
+        try (Socket socket = new Socket(HOSTNAME, PORT)) {
 
-        //     OutputStream output = socket.getOutputStream();
-        //     PrintWriter writer = new PrintWriter(output, true);
-        //     writer.println("new Date()?".toString());
+            OutputStream output = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(output, true);
+            //List<String> credentials = askAuth();
+            writer.println("new Date()?".toString());
+            //writer.println("Username: ".toString());
 
-        //     InputStream input = socket.getInputStream();
-        //     BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            InputStream input = socket.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 
-        //     String time = reader.readLine();
+            String line = reader.readLine();
 
-        //     System.out.println(time);
+            while (line != null) {
+                System.out.println(line);
+                line = reader.readLine();
+            }
 
 
-        // } catch (UnknownHostException ex) {
+        } catch (UnknownHostException ex) {
 
-        //     System.out.println("Server not found: " + ex.getMessage());
+            System.out.println("Server not found: " + ex.getMessage());
 
-        // } catch (IOException ex) {
+        } catch (IOException ex) {
 
-        //     System.out.println("I/O error: " + ex.getMessage());
-        // }
-        List<String> credentials = askAuth();
-        System.out.println("Username: " + credentials.get(0) + " Password: " + credentials.get(1));
+            System.out.println("I/O error: " + ex.getMessage());
+        }
     }
 
     

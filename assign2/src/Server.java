@@ -8,7 +8,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Server {
     public static final String HOSTNAME = "localhost";
     public static final int PORT = 8080;
-    private static int PLAYERS_IN_GAME;
     private final static ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     protected static Database db = new Database();
 
@@ -40,8 +39,6 @@ public class Server {
             return;
         }
 
-        PLAYERS_IN_GAME = playersInGame;
-
         try {
             ServerSocket serverSocket = new ServerSocket(PORT);
             System.out.println("Server is listening on port " + PORT);
@@ -62,6 +59,7 @@ public class Server {
             ex.printStackTrace();
         }
     }
+
 
     private static void handleClient(Socket socket) {
         try (InputStream input = socket.getInputStream();

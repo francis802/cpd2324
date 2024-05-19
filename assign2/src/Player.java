@@ -1,5 +1,4 @@
 import java.net.*;
-import java.io.*;
 
 /**
  * This program demonstrates a simple TCP/IP socket client.
@@ -16,13 +15,12 @@ public class Player {
     private long disconnectTime;
     private Socket socket;
 
-    public Player(String userName, String password, int elo, Socket socket) {
+    public Player(String userName, String password, int elo) {
         this.userName = userName;
         this.password = password;
         this.elo = elo; 
         this.token = "";
         this.loggedIn = false;
-        this.socket = socket;
     }
 
     public String getUserName() {
