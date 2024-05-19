@@ -55,11 +55,11 @@ public class Server {
             while (true) {
                 ArrayList<Player> players = new ArrayList<Player>();
                 if (gameMode == 1) {
-                    players = playerQueue.getPlayersMatchSimple(playersInGame);
+                    players = playerQueue.getPlayersSimple(playersInGame);
                 } else if (gameMode == 2){
-                    players = playerQueue.getPlayersMathRanked(playersInGame);
+                    players = playerQueue.getPlayersRanked(playersInGame);
                 }
-                if (!players.isEmpty() && players.size() == playersInGame) {
+                if (players != null && players.size() == playersInGame) {
                     boolean isRanked = gameMode == 2;
                     Game game = new Game(players, isRanked);
                     executor.submit(game);
