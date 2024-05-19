@@ -27,7 +27,7 @@ public class Game implements Runnable {
         List<Player> players = new ArrayList<Player>();
         Database db = new Database();
         players = db.getPlayers();
-        Game game = new Game(new ArrayList<Socket>(), players, true);
+        Game game = new Game(players, true);
         while (true) {
             game.start();
             if (game.isGameOver()) {
@@ -39,8 +39,7 @@ public class Game implements Runnable {
         }
     }
 
-    public Game(List<Socket> userSockets, List<Player> players, boolean isRanked) {
-        this.userSockets = userSockets;
+    public Game(List<Player> players, boolean isRanked) {
         this.isRanked = isRanked;
         this.players = players;
         this.players.sort((p1, p2) -> p1.getElo() - p2.getElo());
