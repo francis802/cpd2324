@@ -1,15 +1,9 @@
 import java.net.Socket;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.*;
+import java.io.IOException;
 
-import javax.swing.text.html.HTMLDocument.Iterator;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-
-
-public class Game implements Runnable{
+public class Game implements Runnable {
 
     private List<Socket> userSockets;
     private List<Player> players;
@@ -19,6 +13,9 @@ public class Game implements Runnable{
 
     private static final int MAX_WINS = 5;
     private static final int ELO_K = 32;
+    private static final int RECONNECT_TIMEOUT = 60; // segundos
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @Override
     public void run() {
@@ -49,57 +46,61 @@ public class Game implements Runnable{
             this.playerNumbers.put(player.getUserName(), 0);
         }
     }
-    
+
+    public void sendMessage(String message, Socket socket) {
+        try {
+            socket.getOutputStream().write(message.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void start() {
         System.out.println("Starting game with " + userSockets.size() + " players");
         // Ask each player for the number to play the game
         for (Player player : this.players) {
-            // String message = "Please enter a number between 1 and 100";
+            String message = "Please enter a number between 1 and 100";
             // Send a message to the player
-            // this.sendMessage(message, player.getSocket());
+            this.sendMessage(message, player.getSocket());
             // Get the player's response
             // int number = this.getNumber(player.getSocket());
             
-            
             // RANDOM NUMBER between 1 and 100
             int number = (int) (Math.random() * 100 + 1);
-
             this.playerNumbers.replace(player.getUserName(), number);
         }
 
         // Update the player wins
         this.updatePlayerWins();
-
     }
 
     private float calculateChampionProbability(Player player) {
         float sumElo = this.players.stream().mapToInt(Player::getElo).sum();
-        return player.getElo()/sumElo;
+        return player.getElo() / sumElo;
     }
 
     private int calculateEloChampion(Player player) {
-        return (int) (ELO_K*(1-this.calculateChampionProbability(player)));
+        return (int) (ELO_K * (1 - this.calculateChampionProbability(player)));
     }
 
     private int calculateEloLoser(Player player) {
-        return (int) (-ELO_K*this.calculateChampionProbability(player));
+        return (int) (-ELO_K * this.calculateChampionProbability(player));
     }
 
     private void updateElos() {
         List<Player> champions = new ArrayList<Player>();
-        
+
         for (Player player : this.players) {
             if (this.playerWins.get(player.getUserName()) == MAX_WINS) {
                 champions.add(player);
-            }
-            else {
+            } else {
                 player.updateElo(this.calculateEloLoser(player));
             }
         }
 
         for (Player player : champions) {
             System.out.println(player.getUserName() + " has won the game");
-            player.updateElo(this.calculateEloChampion(player)/champions.size());
+            player.updateElo(this.calculateEloChampion(player) / champions.size());
         }
     }
 
@@ -107,14 +108,14 @@ public class Game implements Runnable{
         int winningNumber = this.calculateWinningNumber();
         for (var pair : this.playerNumbers.entrySet()) {
             if (pair.getValue() == winningNumber) {
-                this.playerWins.put(pair.getKey(), this.playerWins.get(pair.getKey())+1);
+                this.playerWins.put(pair.getKey(), this.playerWins.get(pair.getKey()) + 1);
             }
         }
     }
 
     private int calculateWinningNumber() {
         int sumNumbers = this.playerNumbers.values().stream().mapToInt(Integer::intValue).sum();
-        float averageTwoThirds = (sumNumbers/this.playerNumbers.size())*(2/3);
+        float averageTwoThirds = (sumNumbers / this.playerNumbers.size()) * (2 / 3);
         return this.closestNumber(averageTwoThirds);
     }
 
@@ -134,7 +135,7 @@ public class Game implements Runnable{
     public boolean isGameOver() {
         for (var pair : this.playerWins.entrySet()) {
             if (pair.getValue() == MAX_WINS) {
-                if(this.isRanked) {
+                if (this.isRanked) {
                     this.updateElos();
                 }
                 return true;
@@ -142,4 +143,39 @@ public class Game implements Runnable{
         }
         return false;
     }
+
+    public void checkConnections() {
+        for (Player player : this.players) {
+            Socket socket = player.getSocket();
+            if (socket.isClosed()) {
+                this.handleDisconnect(player);
+            }
+        }
+    }
+
+    private void handleDisconnect(Player player) {
+        player.logOut();
+        player.setDisconnectTime(System.currentTimeMillis());
+        scheduler.schedule(() -> {
+            if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) >= RECONNECT_TIMEOUT * 1000) {
+                System.out.println("Player " + player.getUserName() + " failed to reconnect in time.");
+            }
+        }, RECONNECT_TIMEOUT, TimeUnit.SECONDS);
+    }
+
+    private void handleReconnect(Player player, Socket newSocket) {
+        if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) <= RECONNECT_TIMEOUT * 1000) {
+            player.setSocket(newSocket);
+            player.logIn();
+            System.out.println("Player " + player.getUserName() + " reconnected.");
+        } else {
+            System.out.println("Player " + player.getUserName() + " failed to reconnect in time.");
+            try {
+                newSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

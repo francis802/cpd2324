@@ -1,3 +1,4 @@
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
@@ -6,6 +7,7 @@ public class PlayerQueue extends Thread {
     private final ReentrantLock queueLock;
     private final int gameMode;
     private final ExecutorService executor;
+    protected static Set<Player> playerQueue;
 
     public PlayerQueue(ReentrantLock lockPlayerQueue, int gameMode) {
         this.queueLock = lockPlayerQueue;
@@ -35,6 +37,18 @@ public class PlayerQueue extends Thread {
             // Add your queue processing logic here
         } finally {
             queueLock.unlock();
+        }
+    }
+
+    public boolean addPlayerToQueue(Player player) {    
+        queueLock.lock();
+        if(player.isLoggedIn()){
+            playerQueue.add(player);
+            queueLock.unlock();
+            return true;
+        } else {
+            queueLock.unlock();
+            return false;
         }
     }
 }
