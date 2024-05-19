@@ -2,35 +2,37 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 import java.io.FileWriter;
 import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.UUID;
+import java.util.*;
+
 
 
 
 
 public class Database {
     
-    private final String path = "../data/data.csv";
-    private static final int defaultElo = 250;
-    private File file;
+    private final String PLAYER_DATA = "../data/players.csv";
+    private final String TOKEN_DATA = "../data/tokens.csv";
+    private static final int DEFAULT_ELO = 250;
+    private static final long VALIDIY_TIME = 1000 * 60 * 60;
+    private File playerFile;
+    private File tokenFile;
     private static List<Player> players;
+    private Map<String, Long> tokens;
 
     public Database() {
-        this.file = new File(path);
+        this.playerFile = new File(PLAYER_DATA);
 
-        if (!file.exists()) {
-            createFile();
+        if (!playerFile.exists()) {
+            createPlayerFile();
         }
 
         this.players = new ArrayList<Player>();
+        this.tokens = new HashMap<String, Long>();
 
         try {
-            Scanner scanner = new Scanner(file);
+            Scanner scanner = new Scanner(playerFile);
             scanner.nextLine();
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -43,13 +45,31 @@ public class Database {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }   
+
+        this.tokenFile = new File(TOKEN_DATA);
+
+        if (!tokenFile.exists()) {
+            createTokenFile();
+        }
+
        
     }
 
-    private void createFile() {
+    private void createTokenFile() {
+        try { if (tokenFile.createNewFile()) {
+                    try (FileWriter writer = new FileWriter(tokenFile)) {
+                        writer.write("username,token\n");
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+    }
+
+    private void createPlayerFile() {
         try {
-                if (file.createNewFile()) {
-                    try (FileWriter writer = new FileWriter(file)) {
+                if (playerFile.createNewFile()) {
+                    try (FileWriter writer = new FileWriter(playerFile)) {
                         writer.write("username,password,elo\n");
                     }
                 }
@@ -88,6 +108,7 @@ public class Database {
         INVALID_USERNAME,
         INVALID_PASSWORD,
         INVALID_TOKEN,
+        EXPIRED_TOKEN,
         ALREADY_LOGGED_IN
     }   
 
@@ -105,16 +126,16 @@ public class Database {
             return RegisterStatus.USERNAME_TAKEN;
         }
 
-        try (FileWriter writer = new FileWriter(file, true)) {
-            writer.write(userName + "," + password + "," + defaultElo + "\n");
+        try (FileWriter writer = new FileWriter(playerFile, true)) {
+            writer.write(userName + "," + password + "," + DEFAULT_ELO + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Player player = new Player(userName, password, defaultElo);
+        Player player = new Player(userName, password, DEFAULT_ELO);
 
         createToken(player);
-        player.logIn();
+        player.login();
 
         players.add(player);
         
@@ -122,7 +143,7 @@ public class Database {
         return RegisterStatus.SUCCESS;
     }
 
-    public LoginStatus loginUserName(String userName, String password) {
+    public LoginStatus login(String userName, String password) {
         Player player = findUserName(userName);
 
         if (player == null) {
@@ -138,23 +159,27 @@ public class Database {
         }
 
         createToken(player);
-        player.logIn();
+        player.login();
 
         return LoginStatus.SUCCESS;
     }
 
-    public LoginStatus loginToken(String token) {
+    public LoginStatus login(String token) {
         Player player = findToken(token);
 
         if (player == null) {
-            return LoginStatus.INVALID_USERNAME;
+            return LoginStatus.INVALID_TOKEN;
         }
 
         if (player.isLoggedIn()) {
             return LoginStatus.ALREADY_LOGGED_IN;
         }
 
-        player.logIn();
+        if (!validToken(token)) {
+            return LoginStatus.EXPIRED_TOKEN;
+        }
+
+        player.login();
 
         return LoginStatus.SUCCESS;
     }
@@ -162,7 +187,7 @@ public class Database {
 
     public void logout(String userName) {
         Player player = findUserName(userName);
-        player.logOut();
+        player.logout();
     }
 
     public void createToken(Player player) {
@@ -178,8 +203,57 @@ public class Database {
         
         String token = random + "-" + uuid + "-" + timestamp;
 
+        try (FileWriter writer = new FileWriter(tokenFile, true)) {
+            writer.write(player.getUserName() + "," + token + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        tokens.put(token, timestamp + VALIDIY_TIME);
         player.setToken(token);
 
+    }
+
+    public boolean validToken(String token) {
+
+        if (tokens.containsKey(token)) {
+            long timestamp = tokens.get(token);
+            if (timestamp > System.currentTimeMillis()) {
+                return true;
+            }
+        }
+
+        updateTokenFile(token);
+        return false;
+    }
+
+    public void updateTokenFile(String token) {
+        try {
+            File tempFile = new File("temp.csv");
+            FileWriter writer = new FileWriter(tempFile);
+            Scanner scanner = new Scanner(tokenFile);
+            writer.write(scanner.nextLine() + "\n");
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] data = line.split(",");
+                if (data[1].equals(token)) {
+                    continue;
+                }
+                writer.write(line + "\n");
+            }
+            writer.close();
+            scanner.close();
+            tokenFile.delete();
+            tempFile.renameTo(tokenFile);
+            this.tokenFile = tempFile;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
+    public List<Player> getPlayers() {
+        return players;
     }
     
     
@@ -191,10 +265,20 @@ public class Database {
 
             Database db = new Database();
 
-            db.loginUserName("test", "test");
+            
+            db.register("user1", "password1");
+            db.register("user2", "password2");
+            db.register("user3", "password3");
 
+            
             for (Player player : players) {
                 System.out.println(player.getUserName() + " " + player.getPassword() + " " + player.getElo() + " " + player.getToken() + " " + player.isLoggedIn());    
+            }
+
+            var a = db.validToken(players.get(0).getToken());  
+
+            for(Map.Entry<String, Long> entry : db.tokens.entrySet()) {
+                System.out.println(entry.getKey() + " " + entry.getValue());
             }
 
     }

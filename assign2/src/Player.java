@@ -13,6 +13,7 @@ public class Player {
     private int elo;
     private String token;
     private boolean loggedIn;
+    
 
     public Player(String userName, String password, int elo) {
         this.userName = userName;
@@ -46,11 +47,11 @@ public class Player {
         return loggedIn;
     }
 
-    public void logIn() {
+    public void login() {
         this.loggedIn = true;
     }
 
-    public void logOut() {
+    public void logout() {
         this.loggedIn = false;
     }
 
