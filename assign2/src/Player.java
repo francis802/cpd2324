@@ -13,14 +13,16 @@ public class Player {
     private int elo;
     private String token;
     private boolean loggedIn;
-    
+    private long disconnectTime;
+    private Socket socket;
 
-    public Player(String userName, String password, int elo) {
+    public Player(String userName, String password, int elo, Socket socket) {
         this.userName = userName;
         this.password = password;
         this.elo = elo; 
         this.token = "";
         this.loggedIn = false;
+        this.socket = socket;
     }
 
     public String getUserName() {
@@ -57,5 +59,21 @@ public class Player {
 
     public void updateElo(int gameResult) {
         this.elo += gameResult;
+    }
+
+    public void setDisconnectTime(long disconnectTime) {
+        this.disconnectTime = disconnectTime;
+    }
+
+    public long getDisconnectTime() {
+        return disconnectTime;
+    }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 }
