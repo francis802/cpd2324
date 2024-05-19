@@ -1,18 +1,18 @@
 import java.io.IOException;
 import java.util.Scanner;
 
-class SessionInput implements Runnable {
+class SessionInput {
     private final Scanner scanner;
 
     public SessionInput(Scanner nativeScanner) {
         this.scanner = nativeScanner;
     }
 
-    public String readLine() {
+    public String putLine() {
         return scanner.nextLine();
     }
 
-    public int readInt() {
+    public int putInt() {
         return scanner.nextInt();
     }
 
@@ -20,21 +20,4 @@ class SessionInput implements Runnable {
         scanner.close();
     }
 
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                if (System.in.available() > 0) {
-                    System.out.println("Enter a command: ");
-                    String command = readLine();
-                    System.out.println("Command entered: " + command);
-                    if (command.equals("exit")) {
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

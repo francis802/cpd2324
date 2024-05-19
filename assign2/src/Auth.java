@@ -27,67 +27,46 @@ public class Auth implements Runnable {
         while (true) {
             try  {
                 Socket socket = serverSocket.accept();
-                InputStream input = socket.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-                OutputStream output = socket.getOutputStream();
-                PrintWriter writer = new PrintWriter(output, true);
+                CommnSocket commnSocket = new CommnSocket(socket);
                 StringBuilder message = new StringBuilder();
-                message.append("Welcome to the game server\n");
-                message.append("1 - Register\n");
-                message.append("2 - Login\n");
-                writer.println(message.toString());
-                String clientInput = reader.readLine();
+                message.append("Welcome to the game server! 1 - Register 2 - Login");
+                commnSocket.sendString(message.toString());
+                String clientInput = commnSocket.receiveString();
                 System.out.println("Client input: " + clientInput);
                 while (clientInput != null) {
                     if (clientInput.equals("1")) {
-                        writer.println("Enter your username: ");
-                        while (!reader.ready()) {
-                            Thread.sleep(100);
-                        }
-                        String userName = reader.readLine();
-                        writer.println("Enter your password: ");
-                        while (!reader.ready()) {
-                            Thread.sleep(100);
-                        }
-                        String password = reader.readLine();
+                        commnSocket.sendString("Enter your username: ");
+                        String userName = commnSocket.receiveString();
+                        commnSocket.sendString("Enter your password: ");
+                        String password = commnSocket.receiveString();
                         if (register(userName, password, socket)) {
-                            writer.println("Registration successful");
+                            commnSocket.sendString("Registration successful");
+                            playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
                         } else {
-                            writer.println("Registration failed");
+                            commnSocket.sendString("Registration failed");
                         }
                     } else if (clientInput.equals("2")) {
-                        writer.println("Enter your username: ");
-                        while (!reader.ready()) {
-                            Thread.sleep(100);
-                        }
-                        String userName = reader.readLine();
-                        writer.println("Enter your password: ");
-                        while (!reader.ready()) {
-                            Thread.sleep(100);
-                        }
-                        String password = reader.readLine();
+                        commnSocket.sendString("Enter your username: ");
+                        String userName = commnSocket.receiveString();
+                        commnSocket.sendString("Enter your password: ");
+                        String password = commnSocket.receiveString();
                         if (login(userName, password, socket)) {
-                            writer.println("Login successful");
+                            commnSocket.sendString("Login successful");
+                            playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
                         } else {
-                            writer.println("Login failed");
+                            commnSocket.sendString("Login failed");
                         }
                     } else {
-                        writer.println("Invalid option");
+                        commnSocket.sendString("Invalid option");
                     }
-                    writer.println(message.toString());
-                    while (!reader.ready()) {
-                        Thread.sleep(100);
-                    }
-                    clientInput = reader.readLine();
+                    commnSocket.sendString(message.toString());
+                    clientInput = commnSocket.receiveString();
                 }
                 
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            } 
         }
     }
 

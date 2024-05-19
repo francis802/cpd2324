@@ -38,8 +38,8 @@ public class Database {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] data = line.split(",");
-                //Player player = new Player(data[0], data[1], Integer.parseInt(data[2]));
-                //players.add(player);
+                Player player = new Player(data[0], data[1], Integer.parseInt(data[2]));
+                players.add(player);
             }
             scanner.close();
 

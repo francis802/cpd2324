@@ -3,7 +3,6 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,7 +15,6 @@ public class Session {
     public static final String HOSTNAME = "localhost";
     public static final int PORT = 8080;
     private final int sessionId;
-    private ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private SessionInput sessionInput;
     
     public static void main(String[] args) {
@@ -54,26 +52,16 @@ public class Session {
     public void run(){
         try  {
             this.sessionInput = new SessionInput(new Scanner(System.in));
-            executor.submit(sessionInput);
             Socket socket = new Socket(HOSTNAME, PORT);
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
-            List<String> credentials = askAuth();
-            //writer.println("new Date()?".toString());
-            //writer.println("Username: ".toString());
+            CommnSocket commnSocket = new CommnSocket(socket);
 
-            InputStream input = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            String line;
 
-            String line = reader.readLine();
-            System.out.println(line);
-            line = reader.readLine();
-            System.out.println(line);
-            line = reader.readLine();
-            System.out.println(line);
             while (true) {
-                String a = this.sessionInput.readLine();
-                writer.println(a);
+                line = commnSocket.receiveString();
+                System.out.println(line);
+                String a = this.sessionInput.putLine();
+                commnSocket.sendString(a);
             }
 
 
@@ -93,9 +81,9 @@ public class Session {
     public List<String> askAuth() {
         String username, password;
         System.out.println("Enter your username: ");
-        username = this.sessionInput.readLine();
+        username = this.sessionInput.putLine();
         System.out.println("Enter your password: ");
-        password = this.sessionInput.readLine();
+        password = this.sessionInput.putLine();
         return Arrays.asList(username, password);
     }
 
