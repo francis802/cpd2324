@@ -1,12 +1,13 @@
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PlayerQueue implements Runnable {
     private final ReentrantLock queueLock;
     private final int gameMode;
-    protected static Set<Player> playerQueue;
+    protected static Set<Player> playerQueue; // Used Set to avoid duplicates
 
-    public PlayerQueue(ReentrantLock lockPlayerQueue, int gameMode) {
+    public PlayerQueue(ReentrantLock lockPlayerQueue, int gameMode) { //TODO: Did not put lockDB as parameter
         this.queueLock = lockPlayerQueue;
         this.gameMode = gameMode;
     }
@@ -47,5 +48,13 @@ public class PlayerQueue implements Runnable {
             queueLock.unlock();
             return false;
         }
+    }
+
+    public ArrayList<Player> getPlayersMatchSimple(int playersInGame) {
+        return new ArrayList<Player>();
+    }
+
+    public ArrayList<Player> getPlayersMathRanked(int playersInGame) {
+        return new ArrayList<Player>();
     }
 }

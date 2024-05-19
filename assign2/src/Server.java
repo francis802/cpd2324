@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
@@ -51,29 +53,24 @@ public class Server {
             executor.submit(auth);
 
             while (true) {
-                Socket socket = serverSocket.accept();
-                executor.submit(() -> handleClient(socket));
+                ArrayList<Player> players = new ArrayList<Player>();
+                if (gameMode == 1) {
+                    players = playerQueue.getPlayersMatchSimple(playersInGame);
+                } else if (gameMode == 2){
+                    players = playerQueue.getPlayersMathRanked(playersInGame);
+                }
+                if (!players.isEmpty() && players.size() == playersInGame) {
+                    boolean isRanked = gameMode == 2;
+                    Game game = new Game(players, isRanked);
+                    executor.submit(game);
+                }   
             }
         } catch (IOException ex) {
             System.out.println("Server exception: " + ex.getMessage());
             ex.printStackTrace();
-        }
-    }
-
-
-    private static void handleClient(Socket socket) {
-        try (InputStream input = socket.getInputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-             OutputStream output = socket.getOutputStream();
-             PrintWriter writer = new PrintWriter(output, true)) {
-
-            String time = reader.readLine();
-            System.out.println("New client connected: " + time);
-            writer.println(new Date().toString());
-
-        } catch (IOException ex) {
-            System.out.println("Client handling exception: " + ex.getMessage());
-            ex.printStackTrace();
+        } finally {
+            executor.shutdown();
+            System.out.println("Server is shutting down");
         }
     }
 }
