@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 
 public class Game implements Runnable {
 
-    private List<Socket> userSockets;
     private List<Player> players;
     private Map<String, Integer> playerNumbers;
     private Map<String, Integer> playerWins;
@@ -27,7 +26,7 @@ public class Game implements Runnable {
         List<Player> players = new ArrayList<Player>();
         Database db = new Database();
         players = db.getPlayers();
-        Game game = new Game(new ArrayList<Socket>(), players, true);
+        Game game = new Game(players, true);
         while (true) {
             game.start();
             if (game.isGameOver()) {
@@ -39,8 +38,7 @@ public class Game implements Runnable {
         }
     }
 
-    public Game(List<Socket> userSockets, List<Player> players, boolean isRanked) {
-        this.userSockets = userSockets;
+    public Game(List<Player> players, boolean isRanked) {
         this.isRanked = isRanked;
         this.players = players;
         this.players.sort((p1, p2) -> p1.getElo() - p2.getElo());
@@ -63,6 +61,7 @@ public class Game implements Runnable {
         }
     }
 
+    // Dont know if this is well implemented
     public String getInputFromPlayer(Socket socket) {
         try {
             InputStream input = socket.getInputStream();
@@ -74,19 +73,45 @@ public class Game implements Runnable {
         return null;
     }
 
+    // Dont know if this is useful
+    public boolean broadcastMessage(String message) {
+        try {
+            for (Player player : this.players) {
+                this.sendMessage(message, player.getSocket());
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void start() {
-        System.out.println("Starting game with " + userSockets.size() + " players");
+        System.out.println("Starting game with " + this.players.size() + " players");
         // Ask each player for the number to play the game
         for (Player player : this.players) {
             String message = "Please enter a number between 1 and 100";
             // Send a message to the player
             this.sendMessage(message, player.getSocket());
             // Get the player's response
-            // int number = this.getNumber(player.getSocket());
+            String response = this.getInputFromPlayer(player.getSocket());
+            if(response != null) {
+                try {
+                    int number = Integer.parseInt(response);
+                    if(number >= 1 && number <= 100) {
+                        this.playerNumbers.replace(player.getUserName(), number);
+                    } else {
+                        System.out.println("Invalid number");
+                    }
+                } 
+                catch (NumberFormatException e) {
+                    System.out.println("Invalid input");
+                }
+            }
             
             // RANDOM NUMBER between 1 and 100
-            int number = (int) (Math.random() * 100 + 1);
-            this.playerNumbers.replace(player.getUserName(), number);
+            // int number = (int) (Math.random() * 100 + 1);
+            // this.playerNumbers.replace(player.getUserName(), number);
         }
 
         // Update the player wins
@@ -179,7 +204,8 @@ public class Game implements Runnable {
         player.setDisconnectTime(System.currentTimeMillis());
         scheduler.schedule(() -> {
             if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) >= RECONNECT_TIMEOUT * 1000) {
-                System.out.println("Player " + player.getUserName() + " failed to reconnect in time.");
+                String message = "Player " + player.getUserName() + " disconnected.";
+                this.broadcastMessage(message);
             }
         }, RECONNECT_TIMEOUT, TimeUnit.SECONDS);
     }
@@ -189,9 +215,11 @@ public class Game implements Runnable {
         if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) <= RECONNECT_TIMEOUT * 1000) {
             player.setSocket(newSocket);
             //player.logIn();
-            System.out.println("Player " + player.getUserName() + " reconnected.");
+            String message = "Player " + player.getUserName() + " reconnected.";
+            this.broadcastMessage(message);
         } else {
-            System.out.println("Player " + player.getUserName() + " failed to reconnect in time.");
+            String message = "Player " + player.getUserName() + " failed to reconnect.";
+            this.broadcastMessage(message);
             try {
                 newSocket.close();
             } catch (IOException e) {
