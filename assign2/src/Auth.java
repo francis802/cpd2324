@@ -38,10 +38,10 @@ public class Auth implements Runnable{
             CommnSocket commnSocket = new CommnSocket(socket);
             StringBuilder message = new StringBuilder();
             message.append("Welcome to the game server! 1 - Register 2 - Login");
-            commnSocket.sendString(message.toString());
-            String clientInput = commnSocket.receiveString();
             boolean success = false;
             while (!success && socket.isConnected()) {
+                commnSocket.sendString(message.toString());
+                String clientInput = commnSocket.receiveString();
                 if (clientInput.equals("1")) {
                     commnSocket.sendString("Enter your username: ");
                     String userName = commnSocket.receiveString();
@@ -69,8 +69,6 @@ public class Auth implements Runnable{
                 } else {
                     commnSocket.sendString("Invalid option");
                 }
-                commnSocket.sendString(message.toString());
-                clientInput = commnSocket.receiveString();
             }
         
             
