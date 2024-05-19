@@ -1,73 +1,83 @@
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Auth implements Runnable {
+public class Auth implements Runnable{
 
     private final ReentrantLock lockPlayer;
     private final PlayerQueue playerQueue;
     private final ServerSocket serverSocket;
+    private final ExecutorService executor;
 
-    public Auth(ReentrantLock lockPlayer, PlayerQueue playerQueue, ServerSocket serverSocket) {
+    public Auth(ReentrantLock lockPlayer, PlayerQueue playerQueue, ServerSocket serverSocket, ExecutorService executor) {
         this.lockPlayer = lockPlayer;
         this.playerQueue = playerQueue;
         this.serverSocket = serverSocket;
+        this.executor = executor;
     }
-
 
     @Override
     public void run() {
-
-        while (true) {
-            try  {
+        while (!serverSocket.isClosed()) {
+            try {
                 Socket socket = serverSocket.accept();
-                CommnSocket commnSocket = new CommnSocket(socket);
-                StringBuilder message = new StringBuilder();
-                message.append("Welcome to the game server! 1 - Register 2 - Login");
-                commnSocket.sendString(message.toString());
-                String clientInput = commnSocket.receiveString();
-                System.out.println("Client input: " + clientInput);
-                while (clientInput != null) {
-                    if (clientInput.equals("1")) {
-                        commnSocket.sendString("Enter your username: ");
-                        String userName = commnSocket.receiveString();
-                        commnSocket.sendString("Enter your password: ");
-                        String password = commnSocket.receiveString();
-                        if (register(userName, password, socket)) {
-                            commnSocket.sendString("Registration successful");
-                            playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
-                        } else {
-                            commnSocket.sendString("Registration failed");
-                        }
-                    } else if (clientInput.equals("2")) {
-                        commnSocket.sendString("Enter your username: ");
-                        String userName = commnSocket.receiveString();
-                        commnSocket.sendString("Enter your password: ");
-                        String password = commnSocket.receiveString();
-                        if (login(userName, password, socket)) {
-                            commnSocket.sendString("Login successful");
-                            playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
-                        } else {
-                            commnSocket.sendString("Login failed");
-                        }
-                    } else {
-                        commnSocket.sendString("Invalid option");
-                    }
-                    commnSocket.sendString(message.toString());
-                    clientInput = commnSocket.receiveString();
-                }
-                
+                executor.submit(() -> handleClient(socket));
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } 
+                if (!serverSocket.isClosed()) {
+                    e.printStackTrace();
+                }
+            }
         }
+    }
+
+    public void handleClient(Socket socket) {
+        try  {
+            CommnSocket commnSocket = new CommnSocket(socket);
+            StringBuilder message = new StringBuilder();
+            message.append("Welcome to the game server! 1 - Register 2 - Login");
+            commnSocket.sendString(message.toString());
+            String clientInput = commnSocket.receiveString();
+            boolean success = false;
+            while (!success && socket.isConnected()) {
+                if (clientInput.equals("1")) {
+                    commnSocket.sendString("Enter your username: ");
+                    String userName = commnSocket.receiveString();
+                    commnSocket.sendString("Enter your password: ");
+                    String password = commnSocket.receiveString();
+                    if (register(userName, password, socket)) {
+                        commnSocket.sendString("Registration successful");
+                        playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
+                        success = true;
+                    } else {
+                        commnSocket.sendString("Registration failed");
+                    }
+                } else if (clientInput.equals("2")) {
+                    commnSocket.sendString("Enter your username: ");
+                    String userName = commnSocket.receiveString();
+                    commnSocket.sendString("Enter your password: ");
+                    String password = commnSocket.receiveString();
+                    if (login(userName, password, socket)) {
+                        commnSocket.sendString("Login successful");
+                        playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
+                        success = true;
+                    } else {
+                        commnSocket.sendString("Login failed");
+                    }
+                } else {
+                    commnSocket.sendString("Invalid option");
+                }
+                commnSocket.sendString(message.toString());
+                clientInput = commnSocket.receiveString();
+            }
+        
+            
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } 
     }
 
 

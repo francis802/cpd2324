@@ -49,7 +49,7 @@ public class Server {
             PlayerQueue playerQueue = new PlayerQueue(lockPlayer, gameMode);
             executor.submit(playerQueue);
 
-            Auth auth = new Auth(lockPlayer, playerQueue, serverSocket); //@jotas implementa o auth
+            Auth auth = new Auth(lockPlayer, playerQueue, serverSocket, executor); //@jotas implementa o auth
             executor.submit(auth);
 
             while (true) {
