@@ -16,7 +16,7 @@ public class PlayerQueue implements Runnable {
     public void run() {
         while (true) {
             // Example task that could be offloaded to a virtual thread
-            this.processQueue();
+            //this.processQueue();
             try {
                 Thread.sleep(1000); // Sleep to simulate periodic processing
             } catch (InterruptedException e) {

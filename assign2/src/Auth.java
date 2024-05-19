@@ -37,6 +37,7 @@ public class Auth implements Runnable {
                 message.append("2 - Login\n");
                 writer.println(message.toString());
                 String clientInput = reader.readLine();
+                System.out.println("Client input: " + clientInput);
                 while (clientInput != null) {
                     if (clientInput.equals("1")) {
                         writer.println("Enter your username: ");
