@@ -19,7 +19,7 @@ public class Session {
             return;
         }
 
-        int sessionId = Ineteger.parseInt(args[0]);
+        int sessionId = Integer.parseInt(args[0]);
         Session session = new Session(sessionId);
         session.createTokenFile();
         session.run();
@@ -41,6 +41,8 @@ public class Session {
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
+        }
+    }
 
 
     public void run(){
