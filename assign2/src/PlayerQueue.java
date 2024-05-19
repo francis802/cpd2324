@@ -40,6 +40,7 @@ public class PlayerQueue extends Thread {
         }
     }
 
+    // Don't know if this is well implemented
     public boolean addPlayerToQueue(Player player) {    
         queueLock.lock();
         if(player.isLoggedIn()){

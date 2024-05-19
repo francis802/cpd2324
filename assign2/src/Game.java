@@ -47,6 +47,7 @@ public class Game implements Runnable {
         }
     }
 
+    // Dont know if this is well implemented
     public void sendMessage(String message, Socket socket) {
         try {
             socket.getOutputStream().write(message.getBytes());
@@ -144,6 +145,7 @@ public class Game implements Runnable {
         return false;
     }
 
+    // Dont know if this is well implemented
     public void checkConnections() {
         for (Player player : this.players) {
             Socket socket = player.getSocket();
@@ -153,6 +155,7 @@ public class Game implements Runnable {
         }
     }
 
+    // Dont know if this is well implemented
     private void handleDisconnect(Player player) {
         player.logOut();
         player.setDisconnectTime(System.currentTimeMillis());
@@ -163,6 +166,7 @@ public class Game implements Runnable {
         }, RECONNECT_TIMEOUT, TimeUnit.SECONDS);
     }
 
+    // Dont know if this is well implemented
     private void handleReconnect(Player player, Socket newSocket) {
         if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) <= RECONNECT_TIMEOUT * 1000) {
             player.setSocket(newSocket);
