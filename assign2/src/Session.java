@@ -11,13 +11,39 @@ import java.util.List;
 public class Session {
     public static final String HOSTNAME = "localhost";
     public static final int PORT = 8080;
+    private final int sessionId;
     
     public static void main(String[] args) {
-        if (args.length > 0) {
-            System.out.println("Usage: java Session");
+        if (args.length > 1) {
+            System.out.println("Usage: java Session <Session Id>");
             return;
         }
 
+        int sessionId = Ineteger.parseInt(args[0]);
+        Session session = new Session(sessionId);
+        session.createTokenFile();
+        session.run();
+
+    }
+
+    public Session(int sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public void createTokenFile() {
+        try {
+            File tokenFile = new File("../data/tokens/session" + sessionId + ".txt");
+            if (tokenFile.createNewFile()) {
+                System.out.println("Token file created: " + tokenFile.getName());
+            } else {
+                System.out.println("Token file already exists.");
+            }
+        } catch (IOException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+
+
+    public void run(){
         try (Socket socket = new Socket(HOSTNAME, PORT)) {
 
             OutputStream output = socket.getOutputStream();
@@ -46,7 +72,6 @@ public class Session {
             System.out.println("I/O error: " + ex.getMessage());
         }
     }
-
     
 
 
