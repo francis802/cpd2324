@@ -40,6 +40,7 @@ public class Game implements Runnable {
         while (true) {
             play();
             if (isGameOver()) {
+                Server.db.updateFileElos();
                 broadcastMessage("[input]Do you want to play again? (yes/no)");
                 for (Player player : this.players) {
                     String input = this.getInputFromPlayer(player.getUserName());
@@ -156,11 +157,17 @@ public class Game implements Runnable {
 
     private void updateElos(List<Player> champions){
 
+        if(champions.size() == players.size()){
+            broadcastMessage("All players won, no elo changes");
+            return;
+        }
+
         for(Player player : players){
             
             if(champions.contains(player)){
-                player.updateElo(calculateEloChampion(player));
-                sendMessage("You won "+ calculateEloChampion(player) + " elo!", player.getUserName());
+                int elo = calculateEloChampion(player)/champions.size();
+                player.updateElo(elo);
+                sendMessage("You won "+ elo + " elo!", player.getUserName());
             }
             else{
 

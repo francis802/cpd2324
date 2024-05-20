@@ -14,11 +14,10 @@ import java.util.*;
 public class Database {
     
     private final String PLAYER_DATA = "../data/players.csv";
-    private final String TOKEN_DATA = "../data/tokens.csv";
+    private final String SESSION_DATA = "../data/tokens/";
     private static final int DEFAULT_ELO = 250;
-    private static final long VALIDIY_TIME = 1000 * 60 * 60;
+    private static final long VALIDIY_TIME = 1000 * 30;
     private File playerFile;
-    private File tokenFile;
     private static List<Player> players;
     private Map<String, Long> tokens;
 
@@ -46,25 +45,10 @@ public class Database {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }   
-
-        this.tokenFile = new File(TOKEN_DATA);
-
-        if (!tokenFile.exists()) {
-            createTokenFile();
-        }
-
-       
     }
 
-    private void createTokenFile() {
-        try { if (tokenFile.createNewFile()) {
-                    try (FileWriter writer = new FileWriter(tokenFile)) {
-                        writer.write("username,token\n");
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void refreshToken(String token) {
+        tokens.put(token, System.currentTimeMillis() + VALIDIY_TIME);
     }
 
     private void createPlayerFile() {
@@ -86,6 +70,10 @@ public class Database {
             }
         }
         return null;
+    }
+
+    public long getTokenExpiration(String token) {
+        return tokens.get(token);
     }
 
     public Player findUserName(String userName) {
@@ -113,7 +101,7 @@ public class Database {
         ALREADY_LOGGED_IN
     }   
 
-    public RegisterStatus register(String userName, String password, Socket socket) {
+    public RegisterStatus register(String userName, String password, Socket socket, int sessionId) {
 
         if (userName.length() < 3 || userName.length() > 15) {
             return RegisterStatus.INVALID_USERNAME;
@@ -139,11 +127,12 @@ public class Database {
         createToken(player);
         player.login();
         players.add(player);
+        addTokenToSession(player, sessionId);
         
         return RegisterStatus.SUCCESS;
     }
 
-    public LoginStatus login(String userName, String password, Socket socket) {
+    public LoginStatus login(String userName, String password, Socket socket, int sessionId) {
         Player player = findUserName(userName);
 
         if (player == null) {
@@ -161,6 +150,7 @@ public class Database {
         player.setSocket(socket);
         createToken(player);
         player.login();
+        addTokenToSession(player, sessionId);
 
         return LoginStatus.SUCCESS;
     }
@@ -186,6 +176,14 @@ public class Database {
         return LoginStatus.SUCCESS;
     }
 
+    public void addTokenToSession(Player player, int sessionId) {
+        try (FileWriter writer = new FileWriter(SESSION_DATA + "session" + sessionId + ".txt", false)) {
+            writer.write(player.getUserName() + "," + player.getToken() + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void logout(String userName) {
         Player player = findUserName(userName);
@@ -205,12 +203,6 @@ public class Database {
         
         String token = random + "-" + uuid + "-" + timestamp;
 
-        try (FileWriter writer = new FileWriter(tokenFile, true)) {
-            writer.write(player.getUserName() + "," + token + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         tokens.put(token, timestamp + VALIDIY_TIME);
         player.setToken(token);
 
@@ -225,37 +217,46 @@ public class Database {
             }
         }
 
-        updateTokenFile(token);
         return false;
     }
 
-    public void updateTokenFile(String token) {
+    public void updateFileElos() {
+        
         try {
-            File tempFile = new File("temp.csv");
-            FileWriter writer = new FileWriter(tempFile);
-            Scanner scanner = new Scanner(tokenFile);
-            writer.write(scanner.nextLine() + "\n");
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] data = line.split(",");
-                if (data[1].equals(token)) {
-                    continue;
-                }
-                writer.write(line + "\n");
+            this.playerFile.delete();
+            this.playerFile.createNewFile();
+            FileWriter writer = new FileWriter(playerFile);
+            writer.write("username,password,elo\n");
+            for (Player player : players) {
+                writer.write(player.getUserName() + "," + player.getPassword() + "," + player.getElo() + "\n");
             }
             writer.close();
-            scanner.close();
-            tokenFile.delete();
-            tempFile.renameTo(tokenFile);
-            this.tokenFile = tempFile;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+            
     }
     
 
     public List<Player> getPlayers() {
         return players;
+    }
+
+    public String rememberedSession(int sessionId, Socket socket) {
+        try {
+            Scanner scanner = new Scanner(new File(SESSION_DATA + "session" + sessionId + ".txt"));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] data = line.split(",");
+                String token = data[1];
+                return token;
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     

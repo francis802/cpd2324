@@ -54,6 +54,8 @@ public class Session {
             this.sessionInput = new SessionInput(new Scanner(System.in));
             Socket socket = new Socket(HOSTNAME, PORT);
             CommnSocket commnSocket = new CommnSocket(socket);
+            String stringId = Integer.toString(sessionId);
+            commnSocket.sendString(stringId);
 
             String line;
             boolean input = false;
@@ -81,17 +83,6 @@ public class Session {
 
             System.out.println("I/O error: " + ex.getMessage());
         }
-    }
-    
-
-
-    public List<String> askAuth() {
-        String username, password;
-        System.out.println("Enter your username: ");
-        username = this.sessionInput.putLine();
-        System.out.println("Enter your password: ");
-        password = this.sessionInput.putLine();
-        return Arrays.asList(username, password);
     }
 
 }

@@ -53,6 +53,7 @@ public class Server {
             executor.submit(auth);
 
             while (true) {
+                playerQueue.timeoutPlayers();
                 ArrayList<Player> players = new ArrayList<Player>();
                 if (gameMode == 1) {
                     players = playerQueue.getPlayersSimple(playersInGame);
