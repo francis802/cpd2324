@@ -1,12 +1,10 @@
 import java.io.IOException;
-import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 public class PlayerQueue implements Runnable {
     private final ReentrantLock queueLock;
-    private final int gameMode;
     protected static Set<Player> playerQueue; 
     private static Map<Player, Long> playerJoinedAt;
 
@@ -22,7 +20,6 @@ public class PlayerQueue implements Runnable {
 
     public PlayerQueue(ReentrantLock queueLock, int gameMode) {
         this.queueLock = queueLock;
-        this.gameMode = gameMode;
         this.playerQueue = new HashSet<Player>();
         this.playerJoinedAt = new HashMap<Player, Long>();
         this.maxEloDifference = MAX_ELO_DIFFERENCE;

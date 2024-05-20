@@ -132,6 +132,8 @@ public class Auth implements Runnable{
             case ALREADY_LOGGED_IN:
                 System.out.println("User already logged in");
                 break;
+            default:
+                break;
         }
         lockPlayer.unlock();
         return success;
@@ -157,6 +159,8 @@ public class Auth implements Runnable{
                 break;
             case EXPIRED_TOKEN:
                 System.out.println("Token expired");
+                break;
+            default:
                 break;
         }
         lockPlayer.unlock();

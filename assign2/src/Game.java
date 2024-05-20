@@ -1,4 +1,3 @@
-import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.*;
 import java.io.IOException;
@@ -40,7 +39,9 @@ public class Game implements Runnable {
         while (true) {
             play();
             if (isGameOver()) {
-                Server.db.updateFileElos();
+                if (isRanked) {
+                    Server.db.updateFileElos();
+                }
                 broadcastMessage("[input]Do you want to play again? (yes/no)");
                 for (Player player : this.players) {
                     String input = this.getInputFromPlayer(player.getUserName());
