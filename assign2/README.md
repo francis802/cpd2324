@@ -2,13 +2,14 @@
 
 ## Description
 
-This program implements a simple version of "The Price is Right" game. Players are asked to guess the price of an item, and the player whose guess is the closest to the actual price (without exceeding) it wins.
+This program implements a simple version of "The Price is Right" game. 
+Players are asked to guess the price of an item, and the player whose guess is the closest to the actual price (without exceeding it) wins.
 
 ## Compilation and Execution
 
 ### Prerequisites
 
-- Java Development Kit (JDK) installed on your machine. Needs to be a version greater or equal than 21.
+- Java Development Kit (JDK) installed on your machine. Available in Java SE version 21 or later.
 - Terminal or command line access.
 
 ### Compilation
@@ -51,21 +52,21 @@ To start a server for a game mode `ranked` with 3 players:
 
 1. Navigate to the src directory in 4 different terminals.
 
-2. Write the following line in terminal 1
+2. Write the following line in terminal 1:
     ```sh
     java Server 2 3
     ```
 
-3. Write the following line in terminal 2
+3. Write the following line in terminal 2:
     ```sh
     java Session 1
     ```
-4. Write the following line in terminal 3
+4. Write the following line in terminal 3:
     ```sh
     java Session 2
     ```
 
-5. Write the following line in terminal 4
+5. Write the following line in terminal 4:
     ```sh
     java Session 3
     ```
