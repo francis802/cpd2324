@@ -18,7 +18,7 @@ public class Game implements Runnable {
     private String chosenItem = "";
     
 
-    private static final int MAX_WINS = 1;
+    private static final int MAX_WINS = 5;
     private static final int ELO_K = 32;
     private static final int RECONNECT_TIMEOUT = 60; // segundos
 
@@ -149,7 +149,7 @@ public class Game implements Runnable {
         for(Player player : players){
             
             if(champions.contains(player)){
-                int elo = calculateEloChampion(player);
+                int elo = calculateEloChampion(player)/champions.size();
                 player.updateElo(elo);
                 sendMessage("You won "+ elo + " elo!", player.getUserName());
             }
