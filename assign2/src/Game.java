@@ -146,6 +146,11 @@ public class Game implements Runnable {
 
     private void updateElos(List<Player> champions){
 
+        if(champions.size() == players.size()){
+            broadcastMessage("All players won, no elo changes");
+            return;
+        }
+
         for(Player player : players){
             
             if(champions.contains(player)){
