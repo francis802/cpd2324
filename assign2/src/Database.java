@@ -240,6 +240,24 @@ public class Database {
         return false;
     }
 
+    public void updateFileElos() {
+        
+        try {
+            this.playerFile.delete();
+            this.playerFile.createNewFile();
+            FileWriter writer = new FileWriter(playerFile);
+            writer.write("username,password,elo\n");
+            for (Player player : players) {
+                writer.write(player.getUserName() + "," + player.getPassword() + "," + player.getElo() + "\n");
+            }
+            writer.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+            
+    }
+
     public void updateTokenFile(String token) {
         try {
             File tempFile = new File("temp.csv");
