@@ -1,10 +1,6 @@
 import java.net.*;
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * This program demonstrates a simple TCP/IP socket client.

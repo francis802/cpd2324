@@ -258,31 +258,4 @@ public class Database {
         }
         return null;
     }
-    
-    
-    // public static void main(String[] args) {
-    //         if (args.length > 0) {
-    //             System.out.println("Usage: java Database");
-    //             return;
-    //         }
-
-    //         Database db = new Database();
-
-            
-    //         db.register("user1", "password1");
-    //         db.register("user2", "password2");
-    //         db.register("user3", "password3");
-
-            
-    //         for (Player player : players) {
-    //             System.out.println(player.getUserName() + " " + player.getPassword() + " " + player.getElo() + " " + player.getToken() + " " + player.isLoggedIn());    
-    //         }
-
-    //         var a = db.validToken(players.get(0).getToken());  
-
-    //         for(Map.Entry<String, Long> entry : db.tokens.entrySet()) {
-    //             System.out.println(entry.getKey() + " " + entry.getValue());
-    //         }
-
-    // }
 }
