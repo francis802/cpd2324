@@ -14,12 +14,10 @@ import java.util.*;
 public class Database {
     
     private final String PLAYER_DATA = "../data/players.csv";
-    private final String TOKEN_DATA = "../data/tokens.csv";
     private final String SESSION_DATA = "../data/tokens/";
     private static final int DEFAULT_ELO = 250;
     private static final long VALIDIY_TIME = 1000 * 30;
     private File playerFile;
-    private File tokenFile;
     private static List<Player> players;
     private Map<String, Long> tokens;
 
@@ -47,25 +45,10 @@ public class Database {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }   
-
-        this.tokenFile = new File(TOKEN_DATA);
-
-        if (!tokenFile.exists()) {
-            createTokenFile();
-        }
-
-       
     }
 
-    private void createTokenFile() {
-        try { if (tokenFile.createNewFile()) {
-                    try (FileWriter writer = new FileWriter(tokenFile)) {
-                        writer.write("username,token\n");
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void refreshToken(String token) {
+        tokens.put(token, System.currentTimeMillis() + VALIDIY_TIME);
     }
 
     private void createPlayerFile() {
@@ -87,6 +70,10 @@ public class Database {
             }
         }
         return null;
+    }
+
+    public long getTokenExpiration(String token) {
+        return tokens.get(token);
     }
 
     public Player findUserName(String userName) {
@@ -190,7 +177,7 @@ public class Database {
     }
 
     public void addTokenToSession(Player player, int sessionId) {
-        try (FileWriter writer = new FileWriter(SESSION_DATA + "session" + sessionId + ".txt", true)) {
+        try (FileWriter writer = new FileWriter(SESSION_DATA + "session" + sessionId + ".txt", false)) {
             writer.write(player.getUserName() + "," + player.getToken() + "\n");
         } catch (IOException e) {
             e.printStackTrace();
@@ -216,12 +203,6 @@ public class Database {
         
         String token = random + "-" + uuid + "-" + timestamp;
 
-        try (FileWriter writer = new FileWriter(tokenFile, true)) {
-            writer.write(player.getUserName() + "," + token + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         tokens.put(token, timestamp + VALIDIY_TIME);
         player.setToken(token);
 
@@ -236,7 +217,6 @@ public class Database {
             }
         }
 
-        updateTokenFile(token);
         return false;
     }
 
@@ -256,30 +236,6 @@ public class Database {
             e.printStackTrace();
         }
             
-    }
-
-    public void updateTokenFile(String token) {
-        try {
-            File tempFile = new File("temp.csv");
-            FileWriter writer = new FileWriter(tempFile);
-            Scanner scanner = new Scanner(tokenFile);
-            writer.write(scanner.nextLine() + "\n");
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] data = line.split(",");
-                if (data[1].equals(token)) {
-                    continue;
-                }
-                writer.write(line + "\n");
-            }
-            writer.close();
-            scanner.close();
-            tokenFile.delete();
-            tempFile.renameTo(tokenFile);
-            this.tokenFile = tempFile;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
     
 

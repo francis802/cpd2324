@@ -41,6 +41,7 @@ public class Auth implements Runnable{
 
             if (rememberedSession(sessionId, socket)) {
                 message.append("Token remembered. Welcome back!");
+                commnSocket.sendString(message.toString());
                 return;
             }
             

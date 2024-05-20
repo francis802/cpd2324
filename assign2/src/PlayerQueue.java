@@ -1,5 +1,5 @@
-import java.util.ArrayList;
-import java.util.Set;
+import java.io.IOException;
+import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -17,10 +17,10 @@ public class PlayerQueue implements Runnable {
     private int MAX_ELO_DIFFERENCE = 100;
     private int INCREMENT_ELO_DIFFERENCE = 50;
     private int DIFFERENCE_UPDATE_INTERVAL = 1000*5;
-    private long TIMEOUT = 1000 * 5; 
+    private long TIMEOUT = 1000 * 60; 
 
 
-    public PlayerQueue(ReentrantLock queueLock, int gameMode) { //TODO: Did not put lockDB as parameter
+    public PlayerQueue(ReentrantLock queueLock, int gameMode) {
         this.queueLock = queueLock;
         this.gameMode = gameMode;
         this.playerQueue = new HashSet<Player>();
@@ -33,25 +33,36 @@ public class PlayerQueue implements Runnable {
     @Override
     public void run() {
         while (true) {
-            // Example task that could be offloaded to a virtual thread
-            //this.processQueue();
+            queueLock.lock();
             try {
-                Thread.sleep(1000); // Sleep to simulate periodic processing
+                Iterator<Player> iterator = playerQueue.iterator();
+                while (iterator.hasNext()) {
+                    Player player = iterator.next();
+                    if (isPlayerDisconnected(player)) {
+                        System.out.println("Player " + player.getUserName() + " disconnected");
+                        player.logout();
+                    }
+                    else {
+                        refreshPlayer(player);
+                    }
+                }
+            } finally {
+                queueLock.unlock();
+            }
+            try {
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                break;
             }
         }
     }
 
-    private void processQueue() {
-        queueLock.lock();
+    private boolean isPlayerDisconnected(Player player) {
         try {
-            // Process the player queue
-            System.out.println("Processing player queue in game mode: " + gameMode);
-            // Add your queue processing logic here
-        } finally {
-            queueLock.unlock();
+            player.getSocket().sendUrgentData(0); // Send a 1-byte urgent data packet
+            return false;
+        } catch (IOException e) {
+            return true;
         }
     }
 
@@ -85,21 +96,17 @@ public class PlayerQueue implements Runnable {
     public void timeoutPlayers() {
         queueLock.lock();
         for(Player player : playerQueue){
-            if(System.currentTimeMillis() - playerJoinedAt.get(player) > TIMEOUT){
-                if (player.getSocket().isClosed()){
-                    player.logout();
-                    removePlayerFromQueue(player);
-                }
-                else {
-                    refreshPlayer(player);
-                }
+            if(System.currentTimeMillis() - Server.db.getTokenExpiration(player.getToken()) > TIMEOUT){
+                System.out.println("Player " + player.getUserName() + " timed out");
+                player.logout();
+                removePlayerFromQueue(player);
             }
         }
         queueLock.unlock();
     }
 
     public void refreshPlayer(Player player) {
-        playerJoinedAt.put(player, System.currentTimeMillis());
+        Server.db.refreshToken(player.getToken());
     }
 
 
