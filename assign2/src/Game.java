@@ -20,11 +20,9 @@ public class Game implements Runnable {
 
     private static final int MAX_WINS = 5;
     private static final int ELO_K = 32;
-    private static final int RECONNECT_TIMEOUT = 60; // segundos
+    private static final int CHECK_DISCONNECTIONS_INTERVAL = 5;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    // VERIFICAR OS HANDLEDISCONNECT E HANDLERECONECT POIS NÃO DEVEM ESTAR A SER BEM USADOSS
 
     @Override
     public void run() {
@@ -36,17 +34,26 @@ public class Game implements Runnable {
             message.append(player.getUserName() + "\n");
         }
         message.append("===============================");
+
+        scheduler.scheduleAtFixedRate(this::checkDisconnections, 0, CHECK_DISCONNECTIONS_INTERVAL, TimeUnit.SECONDS);
         this.broadcastMessage(message.toString());
         while (true) {
             play();
             if (isGameOver()) {
+                broadcastMessage("[input]Do you want to play again? (yes/no)");
+                for (Player player : this.players) {
+                    String input = this.getInputFromPlayer(player.getUserName());
+                    if (input.equals("yes")) PlayerQueue.playerQueue.add(player);
+                    else{
+                        broadcastMessage("Game over! Thanks for playing!");
+                    }
+                }
                 break;
             }
         }
+        scheduler.shutdown();
     }
 
-    
-    
     public Game(List<Player> players, boolean isRanked) throws IOException {
         this.isRanked = isRanked;
         this.players = players;
@@ -66,6 +73,7 @@ public class Game implements Runnable {
         broadcastMessage("[input]How much do you think a " + chosenItem + " costs?");
 
         for (Player player : this.players) {
+            this.playerNumbers.replace(player.getUserName(), 0);
             String input = this.getInputFromPlayer(player.getUserName());
             if(input != null) {
                 try {
@@ -74,14 +82,17 @@ public class Game implements Runnable {
                         this.playerNumbers.replace(player.getUserName(), number);
                     } else {
                         this.sendMessage("Invalid number", player.getUserName());
+                        this.playerNumbers.replace(player.getUserName(), 0);
                     }
                 } 
                 catch (Exception e) {
                     this.sendMessage("Invalid input", player.getUserName());
+                    this.playerNumbers.replace(player.getUserName(), 0);
                 }
             }
             else {
                 this.sendMessage("Invalid input", player.getUserName());
+                this.playerNumbers.replace(player.getUserName(), 0);
             }
         }
         this.updatePlayerWins();
@@ -208,44 +219,16 @@ public class Game implements Runnable {
     }
 
     // Dont know if this is well implemented
-    public void checkConnections() {
+    public void checkDisconnections() {
         for (Player player : this.players) {
-            Socket socket = player.getSocket();
-            if (socket.isClosed()) {
-                this.handleDisconnect(player);
+            if (!player.isLoggedIn()) {
+                StringBuilder immediateMessage = new StringBuilder();
+                immediateMessage.append("Player " + player.getUserName() + " disconnected.\n");
+                this.broadcastMessage(immediateMessage.toString());
             }
         }
     }
 
-    // Dont know if this is well implemented
-    private void handleDisconnect(Player player) {
-        //player.logOut();
-        player.setDisconnectTime(System.currentTimeMillis());
-        scheduler.schedule(() -> {
-            if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) >= RECONNECT_TIMEOUT * 1000) {
-                String message = "Player " + player.getUserName() + " disconnected.";
-                this.broadcastMessage(message);
-            }
-        }, RECONNECT_TIMEOUT, TimeUnit.SECONDS);
-    }
-
-    // Dont know if this is well implemented
-    private void handleReconnect(Player player, Socket newSocket) {
-        if (!player.isLoggedIn() && (System.currentTimeMillis() - player.getDisconnectTime()) <= RECONNECT_TIMEOUT * 1000) {
-            player.setSocket(newSocket);
-            //player.logIn();
-            String message = "Player " + player.getUserName() + " reconnected.";
-            this.broadcastMessage(message);
-        } else {
-            String message = "Player " + player.getUserName() + " failed to reconnect.";
-            this.broadcastMessage(message);
-            try {
-                newSocket.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     private void loadItemPrices() {
     
