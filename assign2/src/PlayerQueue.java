@@ -16,7 +16,7 @@ public class PlayerQueue implements Runnable {
 
     private int MAX_ELO_DIFFERENCE = 100;
     private int INCREMENT_ELO_DIFFERENCE = 50;
-    private int DIFFERENCE_UPDATE_INTERVAL = 1000*60;
+    private int DIFFERENCE_UPDATE_INTERVAL = 1000*30;
     private long TIMEOUT = 1000 * 60 * 5; 
 
 
@@ -26,6 +26,8 @@ public class PlayerQueue implements Runnable {
         this.playerQueue = new HashSet<Player>();
         this.playerJoinedAt = new HashMap<Player, Long>();
         this.maxEloDifference = MAX_ELO_DIFFERENCE;
+        this.lookingForRankedTime = System.currentTimeMillis();
+        
     }
 
     @Override
@@ -118,6 +120,8 @@ public class PlayerQueue implements Runnable {
 
     public ArrayList<Player> getPlayersRanked(int playersInGame) {
 
+        
+
         queueLock.lock();
         ArrayList<Player> sortedPlayers = playerQueue.stream()
             .filter(Player::isLoggedIn) 
@@ -134,22 +138,23 @@ public class PlayerQueue implements Runnable {
             for(int i = 0; i < playersInGame; i++){
                 selectedPlayers.add(sortedPlayers.get(i));
             }
-            if(selectedPlayers.get(0).getElo() - selectedPlayers.get(selectedPlayers.size() - 1).getElo() > this.maxEloDifference){
-                sortedPlayers.remove(0);
-                continue;
-            }
 
-            this.lookingForRankedTime = System.currentTimeMillis();
-            this.maxEloDifference = MAX_ELO_DIFFERENCE;
-            queueLock.lock();
-            for(Player player:selectedPlayers){
-                removePlayerFromQueue(player);
+            if(selectedPlayers.get(selectedPlayers.size() - 1).getElo() - selectedPlayers.get(0).getElo() > this.maxEloDifference){
+                sortedPlayers.remove(0);
             }
-            queueLock.unlock();
+            else {
+                this.lookingForRankedTime = System.currentTimeMillis();
+                this.maxEloDifference = MAX_ELO_DIFFERENCE;
+                queueLock.lock();
+                for(Player player:selectedPlayers){
+                    removePlayerFromQueue(player);
+                }
+                queueLock.unlock();
             return selectedPlayers;
+            }
             
         }
-        if(System.currentTimeMillis() >= this.lookingForRankedTime + DIFFERENCE_UPDATE_INTERVAL){
+        if(System.currentTimeMillis() - this.lookingForRankedTime > DIFFERENCE_UPDATE_INTERVAL){
             this.maxEloDifference += INCREMENT_ELO_DIFFERENCE;
         }
 

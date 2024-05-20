@@ -18,7 +18,7 @@ public class Game implements Runnable {
     private String chosenItem = "";
     
 
-    private static final int MAX_WINS = 5;
+    private static final int MAX_WINS = 1;
     private static final int ELO_K = 32;
     private static final int RECONNECT_TIMEOUT = 60; // segundos
 
@@ -40,6 +40,7 @@ public class Game implements Runnable {
         while (true) {
             play();
             if (isGameOver()) {
+                Server.db.updateFileElos();
                 break;
             }
         }
@@ -159,8 +160,9 @@ public class Game implements Runnable {
         for(Player player : players){
             
             if(champions.contains(player)){
-                player.updateElo(calculateEloChampion(player));
-                sendMessage("You won "+ calculateEloChampion(player) + " elo", player.getUserName() + "!");
+                int elo = calculateEloChampion(player);
+                player.updateElo(elo);
+                sendMessage("You won "+ elo + " elo!", player.getUserName());
             }
             else{
 
@@ -169,7 +171,7 @@ public class Game implements Runnable {
                     sendMessage("Your elo wasn't affected by the loss", player.getUserName()); 
                     return;
                 }
-                sendMessage("You lost "+ lostElo + " elo", player.getUserName() + "!");
+                sendMessage("You lost "+ lostElo + " elo!", player.getUserName());
                 player.updateElo(-lostElo);
 
             }
