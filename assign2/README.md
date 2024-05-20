@@ -52,21 +52,13 @@ To start a server for a game mode `ranked` with 3 players:
 
 1. Navigate to the src directory in 4 different terminals.
 
-2. Write the following line in terminal 1:
+2. Write the following lines in each one of them:
     ```sh
-    java Server 2 3
-    ```
-
-3. Write the following line in terminal 2:
-    ```sh
+    java Server 2 3 
+   
     java Session 1
-    ```
-4. Write the following line in terminal 3:
-    ```sh
-    java Session 2
-    ```
 
-5. Write the following line in terminal 4:
-    ```sh
+    java Session 2
+   
     java Session 3
     ```
