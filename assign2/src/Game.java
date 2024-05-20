@@ -61,19 +61,12 @@ public class Game implements Runnable {
     }
 
     public void play() {
-        // Ask each player for the number to play the game
-
         int randomInt = new Random().nextInt(itemPrices.size());
         this.chosenItem = (String) itemPrices.keySet().toArray()[randomInt];
         this.chosenPrice = itemPrices.get(chosenItem);
-        
-
         broadcastMessage("[input]How much do you think a " + chosenItem + " costs?");
 
-
-
         for (Player player : this.players) {
-            // Get the player's response
             String input = this.getInputFromPlayer(player.getUserName());
             if(input != null) {
                 try {
@@ -92,12 +85,9 @@ public class Game implements Runnable {
                 this.sendMessage("Invalid input", player.getUserName());
             }
         }
-
-        // Update the player wins
         this.updatePlayerWins();
     }
 
-    // Dont know if this is well implemented
     public void sendMessage(String message, String userName) {
         try {
             commSockets.get(userName).sendString(message);
@@ -106,7 +96,6 @@ public class Game implements Runnable {
         }
     }
 
-    // Dont know if this is well implemented
     public String getInputFromPlayer(String userName) {
         try {
             return commSockets.get(userName).receiveString();
@@ -357,6 +346,40 @@ public class Game implements Runnable {
         itemPrices.put("Samsung Galaxy Note", 950);
         itemPrices.put("LG Gram Laptop", 1200);
         itemPrices.put("Apple iMac", 1800);
+        itemPrices.put("Bose Frames", 200);
+        itemPrices.put("Sony Xperia Phone", 900);
+        itemPrices.put("Oculus Quest 2", 299);
+        itemPrices.put("Nintendo 3DS", 199);
+        itemPrices.put("Apple Pencil", 129);
+        itemPrices.put("Google Chromecast", 50);
+        itemPrices.put("Huawei MateBook", 1100);
+        itemPrices.put("OnePlus 9 Pro", 969);
+        itemPrices.put("Sony A7 III", 2000);
+        itemPrices.put("Surface Headphones", 249);
+        itemPrices.put("Samsung Odyssey Monitor", 699);
+        itemPrices.put("Beats Solo Pro", 299);
+        itemPrices.put("DJI Osmo Pocket", 349);
+        itemPrices.put("Fitbit Versa", 230);
+        itemPrices.put("Logitech G Pro Mouse", 130);
+        itemPrices.put("Netgear Nighthawk Router", 200);
+        itemPrices.put("Ring Doorbell", 199);
+        itemPrices.put("Samsung Gear VR", 129);
+        itemPrices.put("Tile Pro", 35);
+        itemPrices.put("Arlo Pro 3", 500);
+        itemPrices.put("Wyze Cam", 30);
+        itemPrices.put("Razer Blade Laptop", 2000);
+        itemPrices.put("Corsair K95 Keyboard", 199);
+        itemPrices.put("HyperX Cloud II Headset", 99);
+        itemPrices.put("TP-Link Smart Plug", 25);
+        itemPrices.put("Anker PowerCore Battery", 50);
+        itemPrices.put("Blue Yeti Microphone", 130);
+        itemPrices.put("SteelSeries Arctis Pro", 250);
+        itemPrices.put("Elgato Stream Deck", 150);
+        itemPrices.put("Roku Ultra", 100);
+        itemPrices.put("Sonos One Speaker", 200);
+        itemPrices.put("Nest Learning Thermostat", 249);
+        itemPrices.put("Logitech MX Master 3", 99);
+        itemPrices.put("Alienware Gaming Desktop", 2500);
     }
 
 
