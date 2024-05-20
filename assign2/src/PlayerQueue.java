@@ -108,6 +108,9 @@ public class PlayerQueue implements Runnable {
 
 
     public ArrayList<Player> getPlayersSimple(int playersInGame) {
+        if (playerQueue.size() < playersInGame) {
+            return null;
+        }
         
         ArrayList<Player> selectedPlayers = new ArrayList<Player>();
         
@@ -118,16 +121,13 @@ public class PlayerQueue implements Runnable {
             .collect(Collectors.toCollection(ArrayList::new));
         queueLock.unlock();
 
-        for(Player player : sortedPlayers){           
-
-            selectedPlayers.add(player);
-            removePlayerFromQueue(player);
-
-            if(selectedPlayers.size() == playersInGame){
-                break;
-            }
-            
+        queueLock.lock();
+        for(int i = 0; i < playersInGame; i++){
+            selectedPlayers.add(sortedPlayers.get(i));
+            removePlayerFromQueue(sortedPlayers.get(i));
         }
+        queueLock.unlock();
+
         return selectedPlayers;
     } 
 

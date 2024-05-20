@@ -39,15 +39,19 @@ public class Game implements Runnable {
         while (true) {
             play();
             if (isGameOver()) {
-                if (isRanked) {
-                    Server.db.updateFileElos();
-                }
+                if (isRanked) Server.db.updateFileElos();
+                broadcastMessage("==========GAME OVER==========\n");
+                
                 broadcastMessage("[input]Do you want to play again? (yes/no)");
                 for (Player player : this.players) {
                     String input = this.getInputFromPlayer(player.getUserName());
-                    if (input.equals("yes")) PlayerQueue.playerQueue.add(player);
-                    else{
-                        broadcastMessage("Game over! Thanks for playing!");
+                    if (input.equals("yes")) {
+                        PlayerQueue.playerQueue.add(player);
+                        this.sendMessage("You were added to the queue!", player.getUserName());
+                    }
+                    else {
+                        player.logout();
+                        this.sendMessage("Goodbye!", player.getUserName());
                     }
                 }
                 break;
@@ -208,7 +212,7 @@ public class Game implements Runnable {
         float minDifference = Integer.MAX_VALUE;
         for (float number : this.playerNumbers.values()) {
             float difference = Math.abs(number - result);
-            if (difference < minDifference && number <= result) {
+            if (difference < minDifference && number <= result && number >= 1) {
                 minDifference = difference;
                 closest = (int) number;
             }
@@ -226,14 +230,22 @@ public class Game implements Runnable {
         return false;
     }
 
-    // Dont know if this is well implemented
     public void checkDisconnections() {
         for (Player player : this.players) {
-            if (!player.isLoggedIn()) {
+            if (isPlayerDisconnected(player)) {
                 StringBuilder immediateMessage = new StringBuilder();
-                immediateMessage.append("Player " + player.getUserName() + " disconnected.\n");
+                immediateMessage.append("\nPlayer " + player.getUserName() + " disconnected.\n");
                 this.broadcastMessage(immediateMessage.toString());
             }
+        }
+    }
+
+    public boolean isPlayerDisconnected(Player player) {
+        try {
+            player.getSocket().sendUrgentData(0); // Send a 1-byte urgent data packet
+            return false;
+        } catch (IOException e) {
+            return true;
         }
     }
 
