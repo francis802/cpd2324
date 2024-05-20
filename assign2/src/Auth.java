@@ -2,7 +2,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class Auth implements Runnable{
@@ -37,6 +36,13 @@ public class Auth implements Runnable{
         try  {
             CommnSocket commnSocket = new CommnSocket(socket);
             StringBuilder message = new StringBuilder();
+            String stringId = commnSocket.receiveString();
+            int sessionId = Integer.parseInt(stringId);
+
+            if (rememberedSession(sessionId, socket)) {
+                message.append("Token remembered. Welcome back!");
+                return;
+            }
             
             message.append("[input]Welcome to the game server! 1 - Register 2 - Login");
             boolean success = false;
@@ -48,7 +54,7 @@ public class Auth implements Runnable{
                     String userName = commnSocket.receiveString();
                     commnSocket.sendString("[input]Enter your password: ");
                     String password = commnSocket.receiveString();
-                    if (register(userName, password, socket)) {
+                    if (register(userName, password, socket, sessionId)) {
                         commnSocket.sendString("Registration successful");
                         playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
                         success = true;
@@ -60,7 +66,7 @@ public class Auth implements Runnable{
                     String userName = commnSocket.receiveString();
                     commnSocket.sendString("[input]Enter your password: ");
                     String password = commnSocket.receiveString();
-                    if (login(userName, password, socket)) {
+                    if (login(userName, password, socket, sessionId)) {
                         commnSocket.sendString("Login successful");
                         playerQueue.addPlayerToQueue(Server.db.findUserName(userName));
                         success = true;
@@ -80,12 +86,12 @@ public class Auth implements Runnable{
     }
 
 
-    public boolean register(String userName, String password, Socket socket) {
+    public boolean register(String userName, String password, Socket socket, int sessionId) {
         
         boolean success = false;
         
         lockPlayer.lock();
-        Database.RegisterStatus status = Server.db.register(userName, password, socket);
+        Database.RegisterStatus status = Server.db.register(userName, password, socket, sessionId);
         switch (status) {
             case SUCCESS:
                 System.out.println("Registration successful");
@@ -105,12 +111,12 @@ public class Auth implements Runnable{
         return success;
     }
 
-    public boolean login(String userName, String password, Socket socket) {
+    public boolean login(String userName, String password, Socket socket, int sessionId) {
         
         boolean success = false;
         
         lockPlayer.lock();
-        Database.LoginStatus status = Server.db.login(userName, password, socket);
+        Database.LoginStatus status = Server.db.login(userName, password, socket, sessionId);
         switch (status) {
             case SUCCESS:
                 System.out.println("Login successful");
@@ -130,11 +136,12 @@ public class Auth implements Runnable{
         return success;
     }   
 
-    public boolean login(String token, Socket socket) {
+    public boolean rememberedSession(int sessionId, Socket socket) {
         
-        boolean success = false;        
+        boolean success = false;
         
         lockPlayer.lock();
+        String token = Server.db.rememberedSession(sessionId, socket);
         Database.LoginStatus status = Server.db.login(token, socket);
         switch (status) {
             case SUCCESS:

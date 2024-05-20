@@ -16,8 +16,8 @@ public class PlayerQueue implements Runnable {
 
     private int MAX_ELO_DIFFERENCE = 100;
     private int INCREMENT_ELO_DIFFERENCE = 50;
-    private int DIFFERENCE_UPDATE_INTERVAL = 1000*60;
-    private long TIMEOUT = 1000 * 60 * 5; 
+    private int DIFFERENCE_UPDATE_INTERVAL = 1000*5;
+    private long TIMEOUT = 1000 * 5; 
 
 
     public PlayerQueue(ReentrantLock queueLock, int gameMode) { //TODO: Did not put lockDB as parameter
@@ -84,11 +84,20 @@ public class PlayerQueue implements Runnable {
         queueLock.lock();
         for(Player player : playerQueue){
             if(System.currentTimeMillis() - playerJoinedAt.get(player) > TIMEOUT){
-                player.logout();
-                removePlayerFromQueue(player);
+                if (player.getSocket().isClosed()){
+                    player.logout();
+                    removePlayerFromQueue(player);
+                }
+                else {
+                    refreshPlayer(player);
+                }
             }
         }
         queueLock.unlock();
+    }
+
+    public void refreshPlayer(Player player) {
+        playerJoinedAt.put(player, System.currentTimeMillis());
     }
 
 

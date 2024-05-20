@@ -14,6 +14,7 @@ public class Player {
     private boolean loggedIn;
     private long disconnectTime;
     private Socket socket;
+    private int sessionId;
 
     public Player(String userName, String password, int elo) {
         this.userName = userName;

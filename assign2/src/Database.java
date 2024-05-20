@@ -15,8 +15,9 @@ public class Database {
     
     private final String PLAYER_DATA = "../data/players.csv";
     private final String TOKEN_DATA = "../data/tokens.csv";
+    private final String SESSION_DATA = "../data/tokens/";
     private static final int DEFAULT_ELO = 250;
-    private static final long VALIDIY_TIME = 1000 * 60 * 60;
+    private static final long VALIDIY_TIME = 1000 * 30;
     private File playerFile;
     private File tokenFile;
     private static List<Player> players;
@@ -113,7 +114,7 @@ public class Database {
         ALREADY_LOGGED_IN
     }   
 
-    public RegisterStatus register(String userName, String password, Socket socket) {
+    public RegisterStatus register(String userName, String password, Socket socket, int sessionId) {
 
         if (userName.length() < 3 || userName.length() > 15) {
             return RegisterStatus.INVALID_USERNAME;
@@ -139,11 +140,12 @@ public class Database {
         createToken(player);
         player.login();
         players.add(player);
+        addTokenToSession(player, sessionId);
         
         return RegisterStatus.SUCCESS;
     }
 
-    public LoginStatus login(String userName, String password, Socket socket) {
+    public LoginStatus login(String userName, String password, Socket socket, int sessionId) {
         Player player = findUserName(userName);
 
         if (player == null) {
@@ -161,6 +163,7 @@ public class Database {
         player.setSocket(socket);
         createToken(player);
         player.login();
+        addTokenToSession(player, sessionId);
 
         return LoginStatus.SUCCESS;
     }
@@ -184,6 +187,14 @@ public class Database {
         player.login();
 
         return LoginStatus.SUCCESS;
+    }
+
+    public void addTokenToSession(Player player, int sessionId) {
+        try (FileWriter writer = new FileWriter(SESSION_DATA + "session" + sessionId + ".txt", true)) {
+            writer.write(player.getUserName() + "," + player.getToken() + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 
@@ -256,6 +267,22 @@ public class Database {
 
     public List<Player> getPlayers() {
         return players;
+    }
+
+    public String rememberedSession(int sessionId, Socket socket) {
+        try {
+            Scanner scanner = new Scanner(new File(SESSION_DATA + "session" + sessionId + ".txt"));
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                String[] data = line.split(",");
+                String token = data[1];
+                return token;
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     
