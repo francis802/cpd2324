@@ -37,15 +37,16 @@ public class Auth implements Runnable{
         try  {
             CommnSocket commnSocket = new CommnSocket(socket);
             StringBuilder message = new StringBuilder();
-            message.append("Welcome to the game server! 1 - Register 2 - Login");
+            
+            message.append("[input]Welcome to the game server! 1 - Register 2 - Login");
             boolean success = false;
             while (!success && socket.isConnected()) {
                 commnSocket.sendString(message.toString());
                 String clientInput = commnSocket.receiveString();
                 if (clientInput.equals("1")) {
-                    commnSocket.sendString("Enter your username: ");
+                    commnSocket.sendString("[input]Enter your username: ");
                     String userName = commnSocket.receiveString();
-                    commnSocket.sendString("Enter your password: ");
+                    commnSocket.sendString("[input]Enter your password: ");
                     String password = commnSocket.receiveString();
                     if (register(userName, password, socket)) {
                         commnSocket.sendString("Registration successful");
@@ -55,9 +56,9 @@ public class Auth implements Runnable{
                         commnSocket.sendString("Registration failed");
                     }
                 } else if (clientInput.equals("2")) {
-                    commnSocket.sendString("Enter your username: ");
+                    commnSocket.sendString("[input]Enter your username: ");
                     String userName = commnSocket.receiveString();
-                    commnSocket.sendString("Enter your password: ");
+                    commnSocket.sendString("[input]Enter your password: ");
                     String password = commnSocket.receiveString();
                     if (login(userName, password, socket)) {
                         commnSocket.sendString("Login successful");

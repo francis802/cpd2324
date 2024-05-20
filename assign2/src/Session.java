@@ -56,11 +56,16 @@ public class Session {
             CommnSocket commnSocket = new CommnSocket(socket);
 
             String line;
-
+            boolean input = false;
             while (true) {
+                input = false;
                 line = commnSocket.receiveString();
+                if (line.contains("[input]")) {
+                    line = line.substring(7);
+                    input = true;
+                }
                 System.out.println(line);
-                if (!line.equals("Registration successful") && !line.equals("Registration failed") && !line.equals("Login successful") && !line.equals("Login failed")){
+                if (input){
                     String a = this.sessionInput.putLine();
                     commnSocket.sendString(a);
                 }
